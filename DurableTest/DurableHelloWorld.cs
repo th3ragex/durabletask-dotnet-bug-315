@@ -36,7 +36,7 @@ static class DurableHelloWorld
     }
 
     [Function(nameof(StartHelloCities))]
-    public static async Task<HttpResponseData> StartHelloCities(
+    public static async Task<string> StartHelloCities(
         [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")] HttpRequestData req,
         [DurableClient] DurableTaskClient client,
         FunctionContext executionContext)
@@ -46,6 +46,9 @@ static class DurableHelloWorld
         string instanceId = await client.ScheduleNewOrchestrationInstanceAsync(nameof(HelloCities));
         logger.LogInformation("Created new orchestration with instance ID = {instanceId}", instanceId);
 
-        return client.CreateCheckStatusResponse(req, instanceId);
+        var durableTaskVersion = typeof(Microsoft.Azure.Functions.Worker.Extensions.DurableTask.Http.DurableHttpRequest).Assembly
+            .GetName().Version.ToString();
+
+        return $"Microsoft.Azure.Functions.Worker.Extensions.DurableTask: {durableTaskVersion}";
     }
 }
